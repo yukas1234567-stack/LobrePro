@@ -1185,7 +1185,10 @@
     }
 
     function gameLoop() {
-        if (!gameActive) return;
+        if (!gameActive) {
+            requestAnimationFrame(gameLoop);
+            return;
+        }
         if (isPaused) { requestAnimationFrame(gameLoop); return; }
         ctx.save();
         if (shake > 0) {
@@ -1617,6 +1620,10 @@
         gameActive = true; isPaused = false;
         overlay.style.display = "none";
         pauseOverlay.style.display = "none";
+        document.getElementById('gameOverOverlay').style.display = "none";
+        document.getElementById('gameUI').style.display = 'flex';
+        powerupBar.style.display = 'flex';
+        canvas.style.display = 'block';
         stats.games++; saveStats();
         if (settings.music) bgMusic.play().catch(()=>{});
         updateHighScoreDisplay();
