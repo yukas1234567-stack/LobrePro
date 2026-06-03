@@ -15,8 +15,28 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./service-worker.js')
-                    .then(reg => console.log('Service Worker registered'))
+                    .then(reg => {
+                        console.log('Service Worker registered');
+                        reg.addEventListener('updatefound', () => {
+                            const newWorker = reg.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    if (confirm('Yeni bir güncelleme mevcut! Uygulamayı şimdi güncellemek ister misiniz?')) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
                     .catch(err => console.log('Service Worker registration failed', err));
+            });
+
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    window.location.reload();
+                    refreshing = true;
+                }
             });
         }
     </script>
@@ -1716,21 +1736,7 @@
 
     function bootSequence() {
         const boot = document.getElementById('bootScreen');
-        const progress = document.getElementById('bootProgress');
-        const status = document.getElementById('bootStatus');
-        if (!boot || !progress || !status) return;
-        const steps = ['Çekirdek yükleniyor', 'Modüller senkronize ediliyor', 'Arena hazır'];
-        let step = 0;
-        progress.style.width = '18%';
-        const interval = setInterval(() => {
-            status.innerText = steps[Math.min(step, steps.length - 1)];
-            progress.style.width = `${Math.min(100, 38 + step * 28)}%`;
-            step++;
-            if (step > steps.length) {
-                clearInterval(interval);
-                setTimeout(() => boot.classList.add('hide'), 260);
-            }
-        }, 420);
+        if (boot) boot.style.display = 'none';
     }
 
     loadAll();
